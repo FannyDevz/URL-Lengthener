@@ -70,7 +70,7 @@
 
                 if (response.ok) {
                     const { shortUrl, url } = await response.json();
-                    result.innerHTML = `http://localhost:3000/${shortUrl}`
+                    result.innerHTML = `https://length.fanny.dev/${shortUrl}`
                     copyBtn.style.display = '';
                 } else {
                     throw new Error('Failed to lengthen URL');
