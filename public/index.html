@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>URL Lengthener</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.2.0/css/mdb.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">URL Lengthener</a>
+            </div>
+        </div>
+    </nav>
+
+    <p class="text-center">Enter any short URL and Lets lengthen it! Because.. because.. idk man I'm probably high.</p>
+
+    <div class="form-group" style="width: 50%;margin-left: 25%;text-align: -webkit-center;">
+        <form id="urlForm">
+            <input class="form-control" name="url" type="text" id="urlInput" placeholder="https://youtube.com">
+            <button class="btn btn-success" type="submit">lengthen</button>
+            <button style="display: none" id="copyBtn" class="btn btn-warning"  type="button" onclick="copyContent()">Copy Url</button>
+        </form>
+        <p class="text-center" style="width: 100%; word-wrap: break-word; margin-top: 20px" id="result"></p>
+    </div>
+    <script>
+        function copyContent() {
+            var resultElement = document.getElementById('result');
+            var range = document.createRange();
+            range.selectNode(resultElement);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+            alert('Content copied!');
+        }
+    </script>
+
+    <script>
+        document.getElementById('urlForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const urlInput = document.getElementById('urlInput');
+            const copyBtn = document.getElementById('copyBtn');
+            const result = document.getElementById('result');
+            result.innerHTML = 'Loading...';
+
+            let url = urlInput.value.trim(); 
+            
+            if (!url.match(/^https?:\/\//i)) {
+                console.log("test")
+                url = 'http://' + url;
+                result.innerHTML = 'Invalid URL. Please enter a valid URL starting with http:// or https://';
+            }
+
+            const urlRegex = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/i;
+            if (!urlRegex.test(url)) {
+                result.innerHTML = 'Invalid URL. Please enter a valid URL starting with http:// or https://';
+                return;
+            }
+
+            try {
+                const response = await fetch('/lengthen', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+
+                if (response.ok) {
+                    const { shortUrl, url } = await response.json();
+                    result.innerHTML = `http://localhost:3000/${shortUrl}`
+                    copyBtn.style.display = '';
+                } else {
+                    throw new Error('Failed to lengthen URL');
+                }
+            } catch (error) {
+                console.error(error);
+                result.innerHTML = 'Failed to lengthen URL';
+            }
+        });
+    </script>
+</body>
+
+</html>
